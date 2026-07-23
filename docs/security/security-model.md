@@ -29,4 +29,4 @@ How the system itself is secured, and the controls that protect its assets. Thre
 | Lab isolation | Emulator/burner device + sandboxed network for all offensive runs. | NFR-012 |
 
 ## Secrets & repo hygiene
-The public repo must never contain keys, tokens, real endpoints, capture files, or built APKs — these are excluded via `.gitignore`. Claude Code's internal memory/config (`.claude/`, `CLAUDE.md`) is also gitignored and never committed.
+The public repo must never contain keys, tokens, real endpoints, capture files, or built APKs — these are excluded via `.gitignore`. Local tooling config (`.claude/`, `CLAUDE.md`) is also gitignored and never committed.

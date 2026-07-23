@@ -19,7 +19,7 @@ The agent is a **Tier-1 SOC analyst**: triage, correlation against ATT&CK techni
 flowchart LR
     analyst([Mobile SOC analyst])
     device([Monitored Android/iOS device])
-    llm([Anthropic Claude])
+    llm([OpenAI GPT])
     system[[Mobile AI SOC Analyst system]]
 
     device -->|on-device signals| system
@@ -41,7 +41,7 @@ flowchart TB
         RAG[(ChromaDB - ATT&CK + MASTG)]
         LOG[(Signal + alert store)]
     end
-    LLM([Anthropic Claude])
+    LLM([OpenAI API])
 
     MC -->|TLS: signals| API
     API --> AG

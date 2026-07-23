@@ -29,7 +29,7 @@ flowchart TB
         DB[(Alert store)]
     end
     subgraph Z4[Trust zone: External]
-        LLM([Claude API])
+        LLM([OpenAI API])
         C2([Attacker C2 - my test server])
     end
 

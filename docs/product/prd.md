@@ -55,7 +55,7 @@ Detailed and enumerated in [Functional Requirements](functional-requirements.md)
 
 ## 10. Assumptions
 - All offensive execution runs only in an isolated emulator / wiped burner device against infrastructure under my control — never a personal device.
-- Backend and LLM access (Anthropic Claude) are available; see [Tech Stack](../engineering/tech-stack.md).
+- Backend and LLM access (OpenAI API) are available; see [Tech Stack](../engineering/tech-stack.md).
 - The ATT&CK Mobile + OWASP MASTG knowledge base is available for RAG ingestion.
 
 ## 11. Dependencies

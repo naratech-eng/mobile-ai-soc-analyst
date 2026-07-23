@@ -10,7 +10,7 @@ sequenceDiagram
     participant A as FastAPI
     participant G as Agent (Pydantic AI)
     participant R as ChromaDB (RAG)
-    participant L as LLM (Claude)
+    participant L as LLM (OpenAI)
     participant S as Signal/Alert store
 
     D->>A: POST /signals (TLS)
@@ -82,5 +82,5 @@ flowchart TB
     MOB([Mobile client]) -->|TLS| SVC
     SVC --> VEC
     SVC --> STORE
-    SVC -->|HTTPS| CLAUDE([Anthropic Claude API])
+    SVC -->|HTTPS| OPENAI([OpenAI API])
 ```
