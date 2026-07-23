@@ -4,10 +4,14 @@ An AI-based security solution that detects threats, APTs, backdoors, malware, an
 
 ## Documentation map
 
-- **Overview** — architecture and how the agent fits into a real SOC workflow.
-- **Offense** — the Cyber Kill Chain implemented with self-built, benign proof-of-concept code, mapped to ATT&CK Mobile techniques.
-- **Defense** — incident response, threat hunting, malware analysis, and deception.
-- **Lab** — reproducible lab manual for the detection demo.
-- **Research** — the academic research report.
+- **Product & Requirements** — [PRD](product/prd.md), [MoSCoW](product/moscow.md), [functional](product/functional-requirements.md) and [non-functional](product/non-functional-requirements.md) requirements.
+- **Engineering** — [tech stack](engineering/tech-stack.md), [architecture](engineering/architecture.md), [system design](engineering/system-design.md).
+- **Security** — [security model](security/security-model.md) and [threat model](security/threat-model.md) (what is being tested).
+- **Offense** — [Cyber Kill Chain & ATT&CK mapping](02-offense/kill-chain.md), self-built benign PoC.
+- **Defense** — [incident response](03-defense/incident-response.md), [threat hunting](03-defense/threat-hunting.md), [malware analysis](03-defense/malware-analysis.md), [deception](03-defense/deception.md).
+- **Testing** — [test strategy](testing/test-strategy.md) and detection matrix.
+- **Lab** — [lab manual](04-lab/lab-manual.md) for the detection demo.
+- **Research** — [research report](05-research/report.md).
+- **Planning** — [action plan](planning/action-plan.md) and roadmap.
 
 > All offensive material in these docs is **self-built, benign proof-of-concept** executed only in an isolated lab against infrastructure under my control. No in-the-wild malware is used.

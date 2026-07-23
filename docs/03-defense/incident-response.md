@@ -2,6 +2,18 @@
 
 IR lifecycle for the detection demo, explicitly labeled at each stage.
 
+```mermaid
+stateDiagram-v2
+    [*] --> Preparation
+    Preparation --> DetectionAnalysis: signal + alert
+    DetectionAnalysis --> Containment
+    Containment --> Eradication
+    Eradication --> Recovery
+    Recovery --> PostEvent: lessons learned
+    PostEvent --> Preparation: tune detections
+    PostEvent --> [*]
+```
+
 ## Preparation
 
 - Isolated emulator / wiped burner device, sandboxed network.

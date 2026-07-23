@@ -2,9 +2,23 @@
 
 * [Mobile AI SOC Analyst](README.md)
 
-## Overview
+## Product & Requirements
 
-* [Architecture](01-overview/architecture.md)
+* [Product Requirements Document](product/prd.md)
+* [MoSCoW Prioritisation](product/moscow.md)
+* [Functional Requirements](product/functional-requirements.md)
+* [Non-functional Requirements](product/non-functional-requirements.md)
+
+## Engineering
+
+* [Tech Stack](engineering/tech-stack.md)
+* [Architecture](engineering/architecture.md)
+* [System Design](engineering/system-design.md)
+
+## Security
+
+* [Security Model](security/security-model.md)
+* [Threat Model](security/threat-model.md)
 
 ## Offense
 
@@ -17,6 +31,10 @@
 * [Malware Analysis](03-defense/malware-analysis.md)
 * [Deception (Honeypot)](03-defense/deception.md)
 
+## Testing
+
+* [Test Strategy](testing/test-strategy.md)
+
 ## Lab
 
 * [Lab Manual](04-lab/lab-manual.md)
@@ -24,3 +42,7 @@
 ## Research
 
 * [Research Report](05-research/report.md)
+
+## Planning
+
+* [Action Plan](planning/action-plan.md)

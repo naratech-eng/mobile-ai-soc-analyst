@@ -2,6 +2,17 @@
 
 All techniques are implemented with **self-built, benign proof-of-concept code** executed in an isolated emulator against a test server under my control. No in-the-wild malware is used, and nothing is ever run on a personal device.
 
+## Kill-chain flow
+
+```mermaid
+flowchart LR
+    R["Recon<br/>T1422"] --> D["Delivery<br/>T1474.003"]
+    D --> I["Install<br/>T1603"]
+    I --> C["C2<br/>T1521"]
+    C --> E["Exfil<br/>T1646"]
+    E --> P["Persistence<br/>T1541"]
+```
+
 ## Technique mapping (ATT&CK Mobile matrix v19)
 
 | Kill Chain Phase | Technique | Implementation |

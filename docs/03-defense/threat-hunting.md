@@ -2,6 +2,15 @@
 
 The hypothesis is formed **by me** (the analyst), not the agent — this is called out explicitly in the demo. The agent runs the hunt query against historical logs.
 
+```mermaid
+flowchart LR
+    H[Hypothesis - by analyst] --> CO[Collect historical logs]
+    CO --> QY[Agent runs hunt query]
+    QY --> IN[Investigate matches]
+    IN --> OUT[Outcome: new detection rule]
+    OUT -.feeds back.-> H
+```
+
 ## Phases
 
 1. **Hypothesis** — e.g. "A benign-looking utility app is scheduling a recurring job that opens an outbound encrypted channel."
