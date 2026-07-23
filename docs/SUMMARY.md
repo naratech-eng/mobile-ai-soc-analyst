@@ -42,6 +42,7 @@
 ## Research
 
 * [Research Report](05-research/report.md)
+* [References](05-research/references.md)
 
 ## Planning
 

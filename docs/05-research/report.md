@@ -15,7 +15,7 @@ Academic structure, 10–15 pages excluding lab screenshots. Grading weight: 2/3
 9. **Protection**
 10. **Lab Experiment** — reference the [Lab Manual](../04-lab/lab-manual.md).
 11. **Conclusion**
-12. **References**
+12. **References** — see the curated [References](references.md) page (journals, conference papers, standards).
 
 ## Framing
 
