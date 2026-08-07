@@ -72,15 +72,17 @@ All endpoints require authentication (NFR-004) over TLS (NFR-003).
 
 ```mermaid
 flowchart TB
-    subgraph AWS[AWS - provisioned via Terraform]
-        subgraph ECS[ECS Fargate]
+    subgraph Azure[Azure - provisioned via IaC]
+        subgraph CA[Azure Container Apps]
             SVC[FastAPI + Agent container]
         end
+        KV[(Azure Key Vault - secrets)]
         VEC[(ChromaDB volume)]
         STORE[(Event/alert store)]
     end
     MOB([Mobile client]) -->|TLS| SVC
     SVC --> VEC
     SVC --> STORE
+    SVC --> KV
     SVC -->|HTTPS| OPENAI([OpenAI API])
 ```

@@ -10,7 +10,7 @@ How the system itself is secured, and the controls that protect its assets. Thre
 - **Availability** — signal ingestion and alerting remain functional under transient failures (NFR-006).
 
 ## Principles
-- **Least privilege** — the mobile client requests only the permissions its collectors need; the backend grants only required IAM.
+- **Least privilege** — the mobile client requests only the permissions its collectors need; the backend grants only required Azure RBAC roles.
 - **Defence in depth** — TLS + authN/Z + input validation + audit logging, not a single control.
 - **Isolation** — offensive PoC and monitored device run in a sandboxed lab network, separated from any real system.
 - **Data minimisation** — collect and transmit the least signal data needed for triage (NFR-005).
@@ -20,8 +20,8 @@ How the system itself is secured, and the controls that protect its assets. Thre
 |---|---|---|
 | Transport | TLS 1.2+ for all mobile↔backend and backend↔LLM traffic. | NFR-003 |
 | Authentication | Backend authenticates clients; unauthenticated requests rejected. | NFR-004 |
-| Authorisation | Least-privilege IAM for ECS/Fargate + scoped API access. | NFR-004 |
-| Secrets | LLM/API keys via environment/secret manager, never in code or the repo. | NFR-003 |
+| Authorisation | Least-privilege Azure RBAC for Container Apps + scoped API access. | NFR-004 |
+| Secrets | LLM/API keys via Azure Key Vault, never in code or the repo. | NFR-003 |
 | Privacy | On-device signal minimisation; no raw personal content beyond triage need. | NFR-005 |
 | Input validation | Signals validated against typed schemas before triage. | NFR-009 |
 | Audit | Every alert logged with inputs, mapping, timestamp. | FR-009 / NFR-011 |

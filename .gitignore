@@ -32,3 +32,13 @@ dist/
 *.apk
 *.pcap
 *.pcapng
+evidence/**
+!evidence/README.md
+!evidence/malware-analysis/.gitkeep
+
+# Infra state
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+!*.tfvars.example
