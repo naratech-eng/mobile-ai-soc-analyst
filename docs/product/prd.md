@@ -60,7 +60,7 @@ Detailed and enumerated in [Functional Requirements](functional-requirements.md)
 
 ## 11. Dependencies
 - MITRE ATT&CK Mobile matrix and OWASP MASVS/MASTG content.
-- AWS account + Terraform for backend deployment.
+- Azure account + IaC (Bicep/Terraform-for-Azure) for backend deployment.
 - Android SDK/emulator, jadx/apktool, Wireshark, OBS for the lab and demo.
 - Part 1 app specifics confirmed with the professor (blocks final app scope).
 

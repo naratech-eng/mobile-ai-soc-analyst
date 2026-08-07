@@ -59,8 +59,8 @@ Requirements broken down by capability area and prioritised for the gated timeli
 | ID | Requirement | Priority | Priority rationale |
 |---|---|---|---|
 | PL-01 | Android support | M | Primary target platform |
-| PL-02 | Architecture keeps iOS reachable | S | Avoid Android-only lock-in (NFR-008) |
-| PL-03 | iOS feature parity | W | Out of scope this iteration |
+| PL-02 | iOS support via Expo | M | Both platforms targeted from day one (NFR-008) |
+| PL-03 | iOS feature parity | S | Full parity is polish, not core scope |
 
 ## Security & platform quality
 | ID | Requirement | Priority | Traces to | Rationale |

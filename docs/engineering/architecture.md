@@ -18,7 +18,7 @@ The agent is a **Tier-1 SOC analyst**: triage, correlation against ATT&CK techni
 ```mermaid
 flowchart LR
     analyst([Mobile SOC analyst])
-    device([Monitored Android/iOS device])
+    device([Monitored Android / iOS device])
     llm([OpenAI GPT])
     system[[Mobile AI SOC Analyst system]]
 
@@ -35,7 +35,7 @@ flowchart TB
     subgraph Device
         MC[Mobile client - Expo / React Native]
     end
-    subgraph Cloud[Backend - AWS ECS Fargate]
+    subgraph Cloud[Backend - Azure Container Apps]
         API[FastAPI service]
         AG[Agent service - Pydantic AI]
         RAG[(ChromaDB - ATT&CK + MASTG)]
