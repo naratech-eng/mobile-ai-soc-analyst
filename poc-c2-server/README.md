@@ -10,7 +10,7 @@ Never a public/shared endpoint — lab-only, isolated network.
 ## Usage
 ```bash
 chmod +x generate_cert.sh && ./generate_cert.sh   # creates lab_cert.pem / lab_key.pem (gitignored)
-python server.py --host 0.0.0.0 --port 8443 --cert lab_cert.pem --key lab_key.pem
+python3 server.py --host 0.0.0.0 --port 8443 --cert lab_cert.pem --key lab_key.pem
 ```
 Received exfil files are saved under `received/` (gitignored) with a
 timestamped filename for evidence capture.

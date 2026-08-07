@@ -78,7 +78,11 @@ def main() -> None:
 
         with context.wrap_socket(sock, server_side=True) as tls_sock:
             while True:
-                conn, addr = tls_sock.accept()
+                try:
+                    conn, addr = tls_sock.accept()
+                except ssl.SSLError as e:
+                    log.warning("tls_handshake_error error=%s", e)
+                    continue
                 handle_client(conn, addr)
 
 
