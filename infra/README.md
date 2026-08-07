@@ -1,6 +1,6 @@
 # infra
 
-Azure deployment config (Bicep or Terraform-for-Azure, `TBD` which) for the
+Azure deployment config (Terraform, `azurerm` provider) for the
 backend, per [docs/engineering/tech-stack.md](../docs/engineering/tech-stack.md)
 and the deployment diagram in [docs/engineering/system-design.md](../docs/engineering/system-design.md):
 Azure Container Apps (or AKS) hosting the FastAPI+agent container, Azure Key

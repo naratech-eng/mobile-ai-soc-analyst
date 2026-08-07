@@ -40,4 +40,5 @@ evidence/**
 *.tfstate
 *.tfstate.*
 .terraform/
-*.bicepparam.local
+*.tfvars
+!*.tfvars.example

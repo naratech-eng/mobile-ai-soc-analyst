@@ -8,7 +8,7 @@
 | Multi-agent (optional) | CrewAI | Thin layer to visually demo collaborating roles (Recon / Malware / Hunting / Report-Writer). Not required for the core. |
 | LLM | OpenAI (GPT models) | Strong reasoning for triage/report writing. Accessed via Pydantic AI's OpenAI provider. Configurable model: a GPT-4-class model for routine triage; a higher-capability reasoning model for deep analysis. |
 | RAG store | ChromaDB | Local vector store over the ATT&CK Mobile matrix + OWASP MASTG for technique correlation. |
-| Infra | Azure Container Apps (or AKS, `TBD`) + Bicep/Terraform-for-Azure, Azure Key Vault | Reproducible IaC; managed containers; low idle cost; secrets never in code or repo. |
+| Infra | Azure Container Apps (or AKS, `TBD`) + Terraform (azurerm provider), Azure Key Vault | Reproducible IaC; managed containers; low idle cost; secrets never in code or repo. |
 | Static analysis | jadx, apktool | Decompile the self-built PoC APK for malware-analysis walkthrough. |
 | Network analysis | Wireshark | Capture/verify the TLS C2 session and exfil timing. |
 | Device tooling | Android SDK / `adb` | Emulator control, `logcat`, `dumpsys jobscheduler` evidence. |
