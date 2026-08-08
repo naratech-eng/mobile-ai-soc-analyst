@@ -2,7 +2,7 @@
 alert is logged with inputs, mapping, and timestamp — satisfied by
 persisting the full Event before raising the Alert that references it)."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlmodel import Session, select
@@ -26,7 +26,7 @@ def persist_signal(session: Session, signal_in: SignalIn) -> Signal:
         device_id=signal_in.device_id,
         type=signal_in.type,
         payload=signal_in.payload,
-        observed_at=signal_in.observed_at or datetime.utcnow(),
+        observed_at=signal_in.observed_at or datetime.now(timezone.utc),
     )
     session.add(signal)
     session.commit()
