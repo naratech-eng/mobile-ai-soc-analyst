@@ -10,6 +10,7 @@ on:
 permissions:
   contents: read
   packages: write
+  id-token: write # required for OIDC login to Azure (no client secret)
 
 jobs:
   test:
@@ -18,12 +19,15 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
-      - run: pytest -v
+      - name: Run tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: pytest -v
 
   build-and-deploy:
     needs: test
@@ -32,7 +36,7 @@ jobs:
       ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
       IMAGE: ghcr.io/${{ github.repository_owner }}/mobile-ai-soc-analyst-backend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Log in to ghcr.io
         uses: docker/login-action@v3
@@ -53,13 +57,9 @@ jobs:
       - name: Azure login
         uses: azure/login@v2
         with:
-          creds: |
-            {
-              "clientId": "${{ secrets.AZURE_CLIENT_ID }}",
-              "clientSecret": "${{ secrets.AZURE_CLIENT_SECRET }}",
-              "tenantId": "${{ secrets.AZURE_TENANT_ID }}",
-              "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-            }
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy new image to Container App
         run: |

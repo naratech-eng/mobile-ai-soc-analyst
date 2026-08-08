@@ -53,8 +53,23 @@ resource "azurerm_container_app" "dev" {
       }
       env {
         name  = "DATABASE_URL"
-        value = "sqlite:///./soc_analyst.db"
+        value = "sqlite:////mnt/data/soc_analyst.db"
       }
+      env {
+        name  = "CHROMA_PERSIST_DIR"
+        value = "/mnt/data/chroma_data"
+      }
+
+      volume_mounts {
+        name = "app-data"
+        path = "/mnt/data"
+      }
+    }
+
+    volume {
+      name         = "app-data"
+      storage_type = "AzureFile"
+      storage_name = azurerm_container_app_environment_storage.app_data_dev.name
     }
   }
 
@@ -97,7 +112,10 @@ resource "azurerm_container_app" "prod" {
 
   template {
     min_replicas = 0
-    max_replicas = 2
+    # Capped at 1: SQLite over a shared Azure Files mount doesn't handle
+    # concurrent writers from separate replicas safely. Raise this once
+    # the store is swapped to Postgres.
+    max_replicas = 1
 
     container {
       name   = "backend"
@@ -115,8 +133,23 @@ resource "azurerm_container_app" "prod" {
       }
       env {
         name  = "DATABASE_URL"
-        value = "sqlite:///./soc_analyst.db"
+        value = "sqlite:////mnt/data/soc_analyst.db"
       }
+      env {
+        name  = "CHROMA_PERSIST_DIR"
+        value = "/mnt/data/chroma_data"
+      }
+
+      volume_mounts {
+        name = "app-data"
+        path = "/mnt/data"
+      }
+    }
+
+    volume {
+      name         = "app-data"
+      storage_type = "AzureFile"
+      storage_name = azurerm_container_app_environment_storage.app_data_prod.name
     }
   }
 
