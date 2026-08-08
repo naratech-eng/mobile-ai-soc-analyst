@@ -1,0 +1,9 @@
+# Copy to terraform.tfvars and fill in — never commit the real file (gitignored)
+location             = "canadacentral"
+project_name         = "socanalyst"
+ghcr_owner            = "naratech-eng"
+ghcr_image            = "mobile-ai-soc-analyst-backend"
+ghcr_pat              = "ghp_..."
+openai_api_key        = "sk-..."
+backend_api_key_dev   = "change-me-dev"
+backend_api_key_prod  = "change-me-prod"
