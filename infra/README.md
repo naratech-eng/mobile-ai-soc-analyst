@@ -6,8 +6,18 @@ and the deployment diagram in [docs/engineering/system-design.md](../docs/engine
 
 Provisions: one Container Apps Environment shared by two Container Apps
 (`ca-socanalyst-dev` tracking the `dev` branch, `ca-socanalyst-prod`
-tracking `main`), a Key Vault holding the OpenAI API key, and a Log
-Analytics workspace. Images are pulled from `ghcr.io`.
+tracking `main`), a Key Vault holding the OpenAI API key, a Log Analytics
+workspace, and one storage account with **two separate** Azure Files
+shares (`app-data-dev`, `app-data-prod`) — one per environment, never
+shared — each mounted at `/mnt/data` in its Container App so the SQLite
+event/alert store and the ChromaDB index survive scale-to-zero and
+redeploys (Container Apps have no persistent local disk otherwise).
+Images are pulled from `ghcr.io`.
+
+SQLite over a shared network mount doesn't handle concurrent writers
+safely, so both apps are capped at `max_replicas = 1` for now. Swap
+`DATABASE_URL` to a real Postgres instance before raising that — see the
+"swappable" note in `backend/app/store/db.py`.
 
 ## Azure auth: User-Assigned Managed Identity + GitHub OIDC
 
