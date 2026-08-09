@@ -42,3 +42,10 @@ evidence/**
 .terraform/
 *.tfvars
 !*.tfvars.example
+
+# Ritual build artifacts (local, do not commit)
+BUILD-BRIEF.md
+BUILD-BRIEF-*.md
+BUILD-BRIEF-VERIFICATION.md
+UX-REVIEW.md
+UX-REVIEW-*.md
