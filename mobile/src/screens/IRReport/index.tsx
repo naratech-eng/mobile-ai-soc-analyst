@@ -1,39 +1,79 @@
-import { StyleSheet } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
+import { getIrReport } from '@/src/api/irReportService';
+import type { IrReportData } from '@/src/api/irReportService';
 
 export default function IRReportScreen() {
+  const [report, setReport] = useState<IrReportData | null>(null);
+
+  useEffect(() => {
+    getIrReport().then(setReport);
+  }, []);
+
+  if (!report) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>IR Report</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <Text style={styles.body}>
-        Incident-response report view lands here in a later slice — demo-representative content,
-        not wired to a live backend (that endpoint doesn't exist yet).
-      </Text>
-    </View>
+      <Text style={styles.incidentId}>{report.incidentId}</Text>
+      <Text style={styles.summary}>{report.summary}</Text>
+
+      {report.sections.map((section) => (
+        <View key={section.id} style={styles.section}>
+          <Text style={styles.sectionTitle}>{section.title}</Text>
+          <Text style={styles.sectionBody}>{section.body}</Text>
+        </View>
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  content: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 48,
+  },
+  loadingContainer: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 32,
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  incidentId: {
+    fontSize: 12,
+    opacity: 0.6,
+    marginTop: 4,
   },
-  body: {
-    fontSize: 15,
-    lineHeight: 22,
-    textAlign: 'center',
+  summary: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 12,
+  },
+  section: {
+    marginTop: 24,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  sectionBody: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 6,
   },
 });

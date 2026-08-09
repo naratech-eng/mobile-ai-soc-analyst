@@ -8,8 +8,9 @@ import { postSignals } from '@/src/api/signalsService';
 import type { Alert } from '@/src/api/types';
 import { getOrCreateDeviceId } from '@/src/collectors/deviceId';
 import { buildNetworkActivitySignal } from '@/src/collectors/networkActivity';
+import { formatRelativeTime } from '@/src/lib/formatRelativeTime';
 
-import { formatAttackId, formatRelativeTime } from './format';
+import { formatAttackId } from './format';
 
 type CollectorState = 'idle' | 'active' | 'error';
 
