@@ -1,0 +1,38 @@
+[
+  {
+    "attack_id": "T1422",
+    "name": "System Network Configuration Discovery",
+    "url": "https://attack.mitre.org/techniques/T1422/",
+    "text": "T1422 System Network Configuration Discovery: adversary code queries connectivity and Wi-Fi APIs (ConnectivityManager, WifiManager on Android) to learn network configuration such as SSID, IP address, and transport type — typically as a reconnaissance step early in an attack chain, before further action is taken."
+  },
+  {
+    "attack_id": "T1474.003",
+    "name": "Compromise Software Supply Chain",
+    "url": "https://attack.mitre.org/techniques/T1474/003/",
+    "text": "T1474.003 Compromise Software Supply Chain: a malicious payload is bundled inside an otherwise benign-looking application (e.g. a utility or flashlight app) and distributed via sideloading or an unofficial channel, so the victim installs the malicious functionality unknowingly under cover of legitimate-seeming functionality."
+  },
+  {
+    "attack_id": "T1603",
+    "name": "Scheduled Task/Job",
+    "url": "https://attack.mitre.org/techniques/T1603/",
+    "text": "T1603 Scheduled Task/Job: adversary code registers a periodic background job (WorkManager, AlarmManager, or JobScheduler on Android) so that malicious functionality re-executes independently of the app being in the foreground, providing persistence across reboots and app backgrounding."
+  },
+  {
+    "attack_id": "T1521",
+    "name": "Encrypted Channel",
+    "url": "https://attack.mitre.org/techniques/T1521/",
+    "text": "T1521 Encrypted Channel: adversary code establishes a TLS-encrypted socket connection to a command-and-control (C2) server to conceal the content of outbound communications from network inspection, often beaconing device information shortly after connecting."
+  },
+  {
+    "attack_id": "T1646",
+    "name": "Exfiltration Over C2 Channel",
+    "url": "https://attack.mitre.org/techniques/T1646/",
+    "text": "T1646 Exfiltration Over C2 Channel: adversary code reuses an existing command-and-control channel to transmit collected or targeted data off the device, rather than opening a separate exfiltration channel — commonly observed immediately following a C2 beacon on the same encrypted socket."
+  },
+  {
+    "attack_id": "T1541",
+    "name": "Foreground Persistence",
+    "url": "https://attack.mitre.org/techniques/T1541/",
+    "text": "T1541 Foreground Persistence: adversary code starts a foreground service with a low-priority, benign-looking notification to keep the app process alive and resistant to backgrounding or task-kill by the OS, extending the window during which other malicious behavior can execute."
+  }
+]
