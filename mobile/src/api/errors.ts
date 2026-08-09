@@ -33,3 +33,22 @@ export class ApiNetworkError extends Error {
     this.cause = cause;
   }
 }
+
+// Shared human-readable mapping for the error types above — used by any
+// screen surfacing a failed request (Dashboard, Preflight) so the same
+// failure always reads the same way.
+export function describeApiError(err: unknown): string {
+  if (err instanceof ApiAuthError) {
+    return 'Auth error — check the configured backend API key.';
+  }
+  if (err instanceof ApiConfigError) {
+    return 'Not configured — copy mobile/.env.example to mobile/.env.';
+  }
+  if (err instanceof ApiNetworkError) {
+    return "Can't reach the backend — check connectivity.";
+  }
+  if (err instanceof ApiHttpError) {
+    return `Backend error (${err.status}).`;
+  }
+  return 'Something went wrong.';
+}

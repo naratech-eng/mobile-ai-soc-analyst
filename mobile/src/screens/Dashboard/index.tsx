@@ -3,12 +3,13 @@ import { ActivityIndicator, FlatList, Platform, Pressable, StyleSheet } from 're
 
 import { Text, View } from '@/components/Themed';
 import { getAlerts } from '@/src/api/alertsService';
+import { describeApiError } from '@/src/api/errors';
 import { postSignals } from '@/src/api/signalsService';
 import type { Alert } from '@/src/api/types';
 import { getOrCreateDeviceId } from '@/src/collectors/deviceId';
 import { buildNetworkActivitySignal } from '@/src/collectors/networkActivity';
 
-import { describeApiError, formatAttackId, formatRelativeTime } from './format';
+import { formatAttackId, formatRelativeTime } from './format';
 
 type CollectorState = 'idle' | 'active' | 'error';
 

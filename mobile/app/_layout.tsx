@@ -10,7 +10,7 @@ export {
 } from 'expo-router';
 
 export const unstable_settings = {
-  initialRouteName: '(tabs)',
+  initialRouteName: 'preflight',
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -38,6 +38,7 @@ export default function RootLayout() {
 
   return (
     <Stack>
+      <Stack.Screen name="preflight" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
     </Stack>
   );
