@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
 import Colors from '@/constants/Colors';
@@ -20,39 +20,21 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{ ios: 'gauge', android: 'speed', web: 'speed' }}
-              tintColor={color}
-              size={28}
-            />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="speedometer" color={color} size={28} />,
         }}
       />
       <Tabs.Screen
         name="hunt"
         options={{
           title: 'Hunt',
-          tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
-              tintColor={color}
-              size={28}
-            />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="search" color={color} size={28} />,
         }}
       />
       <Tabs.Screen
         name="ir-report"
         options={{
           title: 'IR Report',
-          tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{ ios: 'doc.text', android: 'description', web: 'description' }}
-              tintColor={color}
-              size={28}
-            />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="document-text" color={color} size={28} />,
         }}
       />
     </Tabs>
