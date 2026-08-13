@@ -1,9 +1,17 @@
 """Retrieve ATT&CK technique context for a normalized signal (step 2 of the
 RAG pipeline in docs/engineering/system-design.md)."""
 
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 from dataclasses import dataclass
 
-from app.rag.ingest import COLLECTION_NAME, get_client
+from app.rag.ingest import COLLECTION_NAME, EMBEDDING_FUNCTION, get_client
+
+# ChromaDB's PersistentClient + default ONNX embedding can stall on the
+# container's constrained CPU (and re-instantiating the client per request
+# is a known footgun). Cap every retrieval so a stall degrades to "no
+# match" instead of hanging the whole /signals request.
+_RETRIEVE_TIMEOUT_S = 15
+_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="rag-retrieve")
 
 
 @dataclass
@@ -15,9 +23,11 @@ class TechniqueMatch:
     distance: float
 
 
-def retrieve_technique_context(query: str, top_k: int = 3) -> list[TechniqueMatch]:
+def _query(query: str, top_k: int) -> list[TechniqueMatch]:
     client = get_client()
-    collection = client.get_or_create_collection(COLLECTION_NAME)
+    collection = client.get_or_create_collection(
+        COLLECTION_NAME, embedding_function=EMBEDDING_FUNCTION
+    )
 
     if collection.count() == 0:
         return []
@@ -42,3 +52,15 @@ def retrieve_technique_context(query: str, top_k: int = 3) -> list[TechniqueMatc
             )
         )
     return matches
+
+
+def retrieve_technique_context(query: str, top_k: int = 3) -> list[TechniqueMatch]:
+    try:
+        return _executor.submit(_query, query, top_k).result(timeout=_RETRIEVE_TIMEOUT_S)
+    except FutureTimeout:
+        print(
+            f"WARN retriever: ChromaDB query exceeded {_RETRIEVE_TIMEOUT_S}s; "
+            "returning no matches so triage can proceed without correlation.",
+            flush=True,
+        )
+        return []
