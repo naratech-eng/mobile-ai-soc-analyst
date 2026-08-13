@@ -16,13 +16,18 @@ class TechniqueMatch:
 
 
 def retrieve_technique_context(query: str, top_k: int = 3) -> list[TechniqueMatch]:
+    print("TRACE retriever: get_client", flush=True)
     client = get_client()
+    print("TRACE retriever: get_or_create_collection", flush=True)
     collection = client.get_or_create_collection(COLLECTION_NAME)
 
+    print("TRACE retriever: count", flush=True)
     if collection.count() == 0:
         return []
 
+    print("TRACE retriever: query", flush=True)
     results = collection.query(query_texts=[query], n_results=min(top_k, collection.count()))
+    print("TRACE retriever: query returned", flush=True)
 
     matches: list[TechniqueMatch] = []
     ids = results["ids"][0]

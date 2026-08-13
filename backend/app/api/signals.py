@@ -37,8 +37,11 @@ async def ingest_signals(
     alerts: list[Alert] = []
 
     for signal_in in batch.signals:
+        print("TRACE signals: persisting signal", flush=True)
         signal = persist_signal(session, signal_in)
+        print("TRACE signals: calling run_triage", flush=True)
         triage = await run_triage(deps, signal)
+        print("TRACE signals: run_triage returned", flush=True)
 
         event = persist_event(
             session,
