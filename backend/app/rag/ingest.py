@@ -16,9 +16,15 @@ from pathlib import Path
 import chromadb
 
 from app.config import settings
+from app.rag.embedding import HashingEmbeddingFunction
 
 COLLECTION_NAME = "attack_mobile_techniques"
 DEFAULT_SEED = Path(__file__).parent / "seed_techniques.json"
+
+# Shared, lightweight embedding used for BOTH ingest and retrieval — they
+# must match or queries won't align with stored vectors. Avoids ChromaDB's
+# default onnxruntime model (the OOM source).
+EMBEDDING_FUNCTION = HashingEmbeddingFunction()
 
 _client: chromadb.ClientAPI | None = None
 
@@ -37,7 +43,17 @@ def ingest(source: Path = DEFAULT_SEED) -> int:
     docs = json.loads(source.read_text())
 
     client = get_client()
-    collection = client.get_or_create_collection(COLLECTION_NAME)
+    # Drop any existing collection first: ChromaDB refuses to open a
+    # collection with a different embedding function than it was created
+    # with, so a store seeded by an older build (default onnx EF) would
+    # otherwise raise. We re-seed all docs every startup anyway.
+    try:
+        client.delete_collection(COLLECTION_NAME)
+    except Exception:
+        pass
+    collection = client.create_collection(
+        COLLECTION_NAME, embedding_function=EMBEDDING_FUNCTION
+    )
 
     collection.upsert(
         ids=[d["attack_id"] for d in docs],

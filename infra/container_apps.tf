@@ -38,12 +38,10 @@ resource "azurerm_container_app" "dev" {
     max_replicas = 1
 
     container {
-      name = "backend"
-      image = "${local.ghcr_image_ref}:dev-latest"
-      # 1.0/2Gi (not 0.5/1Gi): ChromaDB's default ONNX embedding model
-      # OOM-kills the container at 1Gi on the first /signals request.
-      cpu    = 1.0
-      memory = "2Gi"
+      name   = "backend"
+      image  = "${local.ghcr_image_ref}:dev-latest"
+      cpu    = 0.5
+      memory = "1Gi"
 
       env {
         name        = "OPENAI_API_KEY"
@@ -120,12 +118,10 @@ resource "azurerm_container_app" "prod" {
     max_replicas = 1
 
     container {
-      name = "backend"
-      image = "${local.ghcr_image_ref}:prod-latest"
-      # 1.0/2Gi (not 0.5/1Gi): ChromaDB's default ONNX embedding model
-      # OOM-kills the container at 1Gi on the first /signals request.
-      cpu    = 1.0
-      memory = "2Gi"
+      name   = "backend"
+      image  = "${local.ghcr_image_ref}:prod-latest"
+      cpu    = 0.5
+      memory = "1Gi"
 
       env {
         name        = "OPENAI_API_KEY"

@@ -11,11 +11,9 @@ from app.store.db import init_db
 def _seed_rag() -> None:
     # CHROMA_PERSIST_DIR is local/ephemeral storage (not the Azure Files
     # mount — SQLite locking over SMB breaks ChromaDB's internal store), so
-    # re-seed the ATT&CK technique docs on every cold start.
-    #
-    # NOTE: ChromaDB's default ONNX embedding model is memory-hungry; the
-    # container is provisioned at 1.0 vCPU / 2Gi (see infra/container_apps.tf)
-    # because it OOM-kills at 0.5/1Gi on the first embedding load.
+    # re-seed the ATT&CK technique docs on every cold start (uses the
+    # lightweight HashingEmbeddingFunction, not ChromaDB's default ONNX
+    # model, so it stays well within the container's 0.5 vCPU / 1Gi).
     try:
         count = ingest()
         print(f"RAG: ingested {count} technique docs on startup", flush=True)
