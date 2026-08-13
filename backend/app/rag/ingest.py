@@ -11,6 +11,7 @@ shape: [{attack_id, name, url, text}, ...].
 
 import argparse
 import json
+import threading
 from pathlib import Path
 
 import chromadb
@@ -27,15 +28,26 @@ DEFAULT_SEED = Path(__file__).parent / "seed_techniques.json"
 EMBEDDING_FUNCTION = HashingEmbeddingFunction()
 
 _client: chromadb.ClientAPI | None = None
+_client_lock = threading.Lock()
+# Serializes collection mutation/reads so the startup re-seed (delete +
+# recreate) can't race the first retrieval's get_or_create. Distinct from
+# _client_lock to avoid re-entrancy (get_client is called before acquiring
+# this one).
+COLLECTION_LOCK = threading.Lock()
 
 
 def get_client() -> chromadb.ClientAPI:
-    # Reuse one PersistentClient process-wide: multiple instances pointing at
-    # the same path is a documented ChromaDB footgun and a suspected cause of
-    # the stalls seen on the container.
+    # Reuse one PersistentClient process-wide, and construct it under a lock:
+    # on cold start the daemon seed thread and the first request thread both
+    # hit this while _client is None, and ChromaDB's shared-system client
+    # corrupts itself if two threads build a client on the same path at once
+    # ("'RustBindingsAPI' object has no attribute 'bindings'"). Double-checked
+    # locking guarantees exactly one construction.
     global _client
     if _client is None:
-        _client = chromadb.PersistentClient(path=settings.chroma_persist_dir)
+        with _client_lock:
+            if _client is None:
+                _client = chromadb.PersistentClient(path=settings.chroma_persist_dir)
     return _client
 
 
@@ -47,22 +59,23 @@ def ingest(source: Path = DEFAULT_SEED) -> int:
     # collection with a different embedding function than it was created
     # with, so a store seeded by an older build (default onnx EF) would
     # otherwise raise. We re-seed all docs every startup anyway.
-    try:
-        client.delete_collection(COLLECTION_NAME)
-    except Exception:
-        pass
-    collection = client.create_collection(
-        COLLECTION_NAME, embedding_function=EMBEDDING_FUNCTION
-    )
+    with COLLECTION_LOCK:
+        try:
+            client.delete_collection(COLLECTION_NAME)
+        except Exception:
+            pass
+        collection = client.create_collection(
+            COLLECTION_NAME, embedding_function=EMBEDDING_FUNCTION
+        )
 
-    collection.upsert(
-        ids=[d["attack_id"] for d in docs],
-        documents=[d["text"] for d in docs],
-        metadatas=[
-            {"attack_id": d["attack_id"], "name": d["name"], "url": d["url"]}
-            for d in docs
-        ],
-    )
+        collection.upsert(
+            ids=[d["attack_id"] for d in docs],
+            documents=[d["text"] for d in docs],
+            metadatas=[
+                {"attack_id": d["attack_id"], "name": d["name"], "url": d["url"]}
+                for d in docs
+            ],
+        )
     return len(docs)
 
 

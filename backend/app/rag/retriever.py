@@ -4,7 +4,7 @@ RAG pipeline in docs/engineering/system-design.md)."""
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 from dataclasses import dataclass
 
-from app.rag.ingest import COLLECTION_NAME, EMBEDDING_FUNCTION, get_client
+from app.rag.ingest import COLLECTION_LOCK, COLLECTION_NAME, EMBEDDING_FUNCTION, get_client
 
 # ChromaDB's PersistentClient + default ONNX embedding can stall on the
 # container's constrained CPU (and re-instantiating the client per request
@@ -25,14 +25,16 @@ class TechniqueMatch:
 
 def _query(query: str, top_k: int) -> list[TechniqueMatch]:
     client = get_client()
-    collection = client.get_or_create_collection(
-        COLLECTION_NAME, embedding_function=EMBEDDING_FUNCTION
-    )
+    with COLLECTION_LOCK:
+        collection = client.get_or_create_collection(
+            COLLECTION_NAME, embedding_function=EMBEDDING_FUNCTION
+        )
 
-    if collection.count() == 0:
-        return []
+        count = collection.count()
+        if count == 0:
+            return []
 
-    results = collection.query(query_texts=[query], n_results=min(top_k, collection.count()))
+        results = collection.query(query_texts=[query], n_results=min(top_k, count))
 
     matches: list[TechniqueMatch] = []
     ids = results["ids"][0]
