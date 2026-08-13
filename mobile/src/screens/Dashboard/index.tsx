@@ -4,15 +4,43 @@ import { ActivityIndicator, FlatList, Platform, Pressable, StyleSheet } from 're
 import { Text, View } from '@/components/Themed';
 import { getAlerts } from '@/src/api/alertsService';
 import { describeApiError } from '@/src/api/errors';
-import { postSignals } from '@/src/api/signalsService';
-import type { Alert } from '@/src/api/types';
+import type { Alert, SignalIn } from '@/src/api/types';
 import { getOrCreateDeviceId } from '@/src/collectors/deviceId';
+import { buildInstalledAppsSignals } from '@/src/collectors/installedApps';
 import { buildNetworkActivitySignal } from '@/src/collectors/networkActivity';
+import { buildScheduledJobSignal, ensureScheduledJobRegistered } from '@/src/collectors/scheduledJob';
 import { formatRelativeTime } from '@/src/lib/formatRelativeTime';
+import { postSignalsWithQueue } from '@/src/lib/signalQueue';
 
 import { formatAttackId } from './format';
 
 type CollectorState = 'idle' | 'active' | 'error';
+
+// Best-effort: MC-01/MC-02/MC-03 need the native device-inventory module /
+// background-task registration that only exist after an EAS dev-client
+// rebuild. Until then (or on any other collector hiccup) network_activity
+// alone must still post — one collector failing must never block the rest.
+async function collectBestEffort(deviceId: string, platform: string): Promise<SignalIn[]> {
+  const signals: SignalIn[] = [await buildNetworkActivitySignal(deviceId, platform)];
+
+  try {
+    const { installedAppSignals, permissionSignals } = await buildInstalledAppsSignals(
+      deviceId,
+      platform
+    );
+    signals.push(...installedAppSignals, ...permissionSignals);
+  } catch {
+    // Native module unavailable in this build — degrade silently.
+  }
+
+  try {
+    signals.push(await buildScheduledJobSignal(deviceId, platform));
+  } catch {
+    // Background-task API unavailable in this build — degrade silently.
+  }
+
+  return signals;
+}
 
 export default function DashboardScreen() {
   const [deviceId, setDeviceId] = useState<string | null>(null);
@@ -21,6 +49,7 @@ export default function DashboardScreen() {
   const [alertsError, setAlertsError] = useState<string | null>(null);
   const [collectorState, setCollectorState] = useState<CollectorState>('idle');
   const [collectorError, setCollectorError] = useState<string | null>(null);
+  const [collectorNotice, setCollectorNotice] = useState<string | null>(null);
   const [lastSignalPostedAt, setLastSignalPostedAt] = useState<string | null>(null);
 
   const refreshAlerts = useCallback(async () => {
@@ -39,6 +68,7 @@ export default function DashboardScreen() {
   useEffect(() => {
     getOrCreateDeviceId().then(setDeviceId);
     refreshAlerts();
+    ensureScheduledJobRegistered();
   }, [refreshAlerts]);
 
   const handlePostSignal = useCallback(async () => {
@@ -47,12 +77,21 @@ export default function DashboardScreen() {
     }
     setCollectorState('active');
     setCollectorError(null);
+    setCollectorNotice(null);
     try {
-      const signal = await buildNetworkActivitySignal(deviceId, Platform.OS);
-      await postSignals([signal]);
-      setLastSignalPostedAt(new Date().toISOString());
+      const signals = await collectBestEffort(deviceId, Platform.OS);
+      const result = await postSignalsWithQueue(signals);
+
+      if (result.status === 'queued') {
+        setCollectorNotice(`Offline — buffered ${result.queuedCount} signal(s) locally.`);
+      } else {
+        if (result.flushedQueuedCount > 0) {
+          setCollectorNotice(`Flushed ${result.flushedQueuedCount} previously buffered signal(s).`);
+        }
+        setLastSignalPostedAt(new Date().toISOString());
+        await refreshAlerts();
+      }
       setCollectorState('idle');
-      await refreshAlerts();
     } catch (err) {
       setCollectorError(describeApiError(err));
       setCollectorState('error');
@@ -70,12 +109,13 @@ export default function DashboardScreen() {
           {lastSignalPostedAt ? ` · last signal ${formatRelativeTime(lastSignalPostedAt)}` : ''}
         </Text>
         {collectorError ? <Text style={styles.errorText}>{collectorError}</Text> : null}
+        {collectorNotice ? <Text style={styles.statusLine}>{collectorNotice}</Text> : null}
         <Pressable
           onPress={handlePostSignal}
           disabled={collectorState === 'active' || !deviceId}
           style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}>
           <Text style={styles.buttonText}>
-            {collectorState === 'active' ? 'Posting…' : 'Post Signal'}
+            {collectorState === 'active' ? 'Collecting…' : 'Collect & Post Signals'}
           </Text>
         </Pressable>
       </View>

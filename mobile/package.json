@@ -5,7 +5,9 @@
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "device-inventory": "file:./modules/device-inventory",
     "expo": "^57.0.11",
+    "expo-background-task": "~57.0.9",
     "expo-constants": "~57.0.9",
     "expo-crypto": "~57.0.1",
     "expo-dev-client": "~57.0.10",
@@ -17,6 +19,7 @@
     "expo-splash-screen": "~57.0.5",
     "expo-status-bar": "~57.0.1",
     "expo-symbols": "~57.0.2",
+    "expo-task-manager": "~57.0.9",
     "expo-web-browser": "~57.0.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -45,7 +48,10 @@
   "jest": {
     "preset": "jest-expo",
     "moduleNameMapper": {
-      "^@react-native-async-storage/async-storage$": "@react-native-async-storage/async-storage/jest/async-storage-mock"
+      "^@react-native-async-storage/async-storage$": "@react-native-async-storage/async-storage/jest/async-storage-mock",
+      "^device-inventory$": "<rootDir>/modules/device-inventory/mock.ts",
+      "^expo-task-manager$": "<rootDir>/jest-mocks/expo-task-manager.ts",
+      "^expo-background-task$": "<rootDir>/jest-mocks/expo-background-task.ts"
     }
   }
 }

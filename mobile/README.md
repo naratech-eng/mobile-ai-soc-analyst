@@ -4,13 +4,39 @@ Expo / React Native client targeting Android and iOS, per
 [docs/engineering/tech-stack.md](../docs/engineering/tech-stack.md). Scaffolded
 with `create-expo-app`'s `tabs` template (Expo Router, TypeScript).
 
-- `src/collectors/` — permissions, installed apps, scheduled jobs, network activity (MC-01..MC-04), normalized to the `Signal` schema and posted to `/signals`
-- `src/api/` — typed client for the backend API surface
-- `src/screens/` — Dashboard, Hunt, IR report views; `app/(tabs)/` route files re-export these
+- `src/collectors/` — all four MC-01..MC-04 collectors, normalized to the `SignalIn` schema and posted to `/signals`:
+  - `network_activity` (MC-04) — Expo-safe, pure JS (`expo-network`)
+  - `installed_app` / `permission` (MC-02 / MC-01) — via the local native module in `modules/device-inventory/`, scoped to non-system (user-installed) packages only
+  - `scheduled_job` (MC-03) — self-reported only: the app reports its own background-task registration state (`expo-task-manager` + `expo-background-task`), not other apps' jobs — see "Scheduled-job collector scope" below
+- `src/lib/signalQueue.ts` — MC-05: buffers signals locally and retries when the backend is unreachable, instead of dropping them
+- `modules/device-inventory/` — local Expo module (Android-only, Kotlin): wraps `PackageManager.getInstalledPackages(GET_PERMISSIONS)` to enumerate installed packages and their granted permissions
+- `src/api/` — typed client for the backend API surface (`/signals`, `/alerts`, `/hunt`, `/reports/ir`), shared bearer auth, explicit 401 handling
+- `src/screens/` — Preflight, Dashboard, Hunt, IR report views; `app/preflight.tsx` and `app/(tabs)/` route files re-export these
 
 Dashboard UI/UX scope was pending confirmation with the professor (M1 in
 [docs/planning/action-plan.md](../docs/planning/action-plan.md)) — now
 confirmed, unblocking Part 1.
+
+### Scheduled-job collector scope
+
+Android doesn't let a third-party app enumerate *other* apps'
+AlarmManager/WorkManager jobs without root or an accessibility service, so
+MC-03 reports the SOC app's own scheduled background work only. For the PoC
+kill chain's own scheduled job (T1603), `adb shell dumpsys jobscheduler`
+stays the manual evidence path in the video walkthrough — that's expected,
+not a gap.
+
+### Requires a dev-client rebuild
+
+`modules/device-inventory/` is native Kotlin code and `expo-task-manager`
+is a new native dependency, so a build that predates this change won't have
+them linked. Installed-app/permission and scheduled-job collection will
+silently no-op (network_activity still posts fine — collectors degrade
+independently) until you queue a new EAS dev-client build and reinstall it:
+
+```bash
+npx eas-cli build --profile development --platform android
+```
 
 ## Run locally
 
@@ -50,9 +76,15 @@ Developer account is added to the project. The Genymotion emulator already
 set up for the offensive PoC (`poc-apk/`) is the intended test device — same
 lab environment.
 
-The three tabs (Dashboard, Hunt, IR Report) are scaffolded as placeholder
-screens for now — collectors, the API client, and live data wire up in later
-slices (see `BUILD-BRIEF.md` at the repo root while it's being built out).
+Preflight, Dashboard, Hunt, and IR Report are all wired up: Preflight checks
+backend target/key/health before collection starts; Dashboard's "Collect &
+Post Signals" button runs all four collectors and posts the batch to
+`/signals` (buffering locally if the backend is unreachable) and shows the
+live `/alerts` feed; Hunt runs analyst-supplied queries against `/hunt`; IR
+Report generates a real report via `/reports/ir`. See `BUILD-BRIEF.md` at the
+repo root for the original demo build's scope and non-goals — the
+permission/installed-app/scheduled-job collectors it deferred are now built,
+per [docs/product/moscow.md](../docs/product/moscow.md)'s MC-01/MC-02/MC-03.
 
 ## Structure notes
 
@@ -62,3 +94,7 @@ slices (see `BUILD-BRIEF.md` at the repo root while it's being built out).
 - `components/` — shared UI primitives from the template (`Themed` for
   light/dark `Text`/`View`, color-scheme hooks) — reused across screens rather
   than duplicated.
+- `modules/` — local Expo native modules (currently just `device-inventory`).
+  Linked into `mobile/package.json` via a `file:` dependency; EAS's remote
+  prebuild step picks it up automatically the same way it would a published
+  npm package, no manual native-project wiring needed.
