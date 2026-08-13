@@ -21,3 +21,29 @@ export type Alert = {
   severity: string;
   raised_at: string;
 };
+
+export type HuntMatch = {
+  signal_id: string;
+  device_id: string;
+  type: SignalType;
+  matched_reason: string;
+  observed_at: string;
+};
+
+export type HuntResult = {
+  query: string;
+  matches: HuntMatch[];
+};
+
+export type IrReportSectionApi = {
+  id: string;
+  title: string;
+  body: string;
+};
+
+export type IrReportApi = {
+  incident_id: string;
+  generated_at: string;
+  summary: string;
+  sections: IrReportSectionApi[];
+};

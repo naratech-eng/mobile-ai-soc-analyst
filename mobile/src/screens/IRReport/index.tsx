@@ -2,15 +2,33 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
+import { ApiHttpError, describeApiError } from '@/src/api/errors';
 import { getIrReport } from '@/src/api/irReportService';
 import type { IrReportData } from '@/src/api/irReportService';
 
 export default function IRReportScreen() {
   const [report, setReport] = useState<IrReportData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getIrReport().then(setReport);
+    getIrReport()
+      .then(setReport)
+      .catch((err) =>
+        setError(
+          err instanceof ApiHttpError && err.status === 404
+            ? 'No alerts raised yet — post a signal that triages as suspicious first.'
+            : describeApiError(err)
+        )
+      );
   }, []);
+
+  if (error) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
 
   if (!report) {
     return (
@@ -49,6 +67,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  errorText: {
+    fontSize: 14,
+    textAlign: 'center',
+    color: '#c0392b',
   },
   title: {
     fontSize: 20,

@@ -88,3 +88,43 @@ class SignalIn(SQLModel):
 
 class SignalBatchRequest(SQLModel):
     signals: list[SignalIn]
+
+
+# --- Hunt (FR-005 / TH-01) ---
+
+
+class HuntRequest(SQLModel):
+    query: str
+
+
+class HuntMatch(SQLModel):
+    signal_id: str
+    device_id: str
+    type: SignalType
+    matched_reason: str
+    observed_at: datetime
+
+
+class HuntResult(SQLModel):
+    query: str
+    matches: list[HuntMatch]
+
+
+# --- IR report (FR-004) ---
+
+
+class IrReportRequest(SQLModel):
+    alert_id: Optional[str] = None  # defaults to the most recent alert
+
+
+class IrReportSection(SQLModel):
+    id: str  # "preparation" | "detection" | "containment" | "post_event"
+    title: str
+    body: str
+
+
+class IrReportResult(SQLModel):
+    incident_id: str
+    generated_at: datetime
+    summary: str
+    sections: list[IrReportSection]

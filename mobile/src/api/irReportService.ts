@@ -1,15 +1,38 @@
-// Mocked — see BUILD-BRIEF.md's repo-boundary note: POST /reports/ir
-// doesn't exist on the backend. This file IS the mock, full stop (RB-6: no
-// runtime live/mock flag). When the real endpoint ships, this body
-// changes to call request('/reports/ir', ...) — screens don't change.
+// POST /reports/ir (FR-004): generates a real report from the most recent
+// alert. See BUILD-BRIEF.md's repo-boundary note; this replaced the mock
+// now that the endpoint exists. Keeps the screen's existing camelCase shape
+// — the backend contract is snake_case, so this is the seam that adapts it.
 
-import { IR_REPORT, type IrReportData } from './mocks/irReportData';
+import { request } from './client';
+import type { IrReportApi } from './types';
 
-const MOCK_DELAY_MS = 300;
+export type IrReportSection = {
+  id: 'preparation' | 'detection' | 'containment' | 'post_event';
+  title: string;
+  body: string;
+};
 
-export async function getIrReport(): Promise<IrReportData> {
-  await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
-  return IR_REPORT;
+export type IrReportData = {
+  incidentId: string;
+  generatedAt: string;
+  summary: string;
+  sections: IrReportSection[];
+};
+
+export async function getIrReport(alertId?: string): Promise<IrReportData> {
+  const api = await request<IrReportApi>('/reports/ir', {
+    method: 'POST',
+    body: JSON.stringify({ alert_id: alertId ?? null }),
+  });
+
+  return {
+    incidentId: api.incident_id,
+    generatedAt: api.generated_at,
+    summary: api.summary,
+    sections: api.sections.map((s) => ({
+      id: s.id as IrReportSection['id'],
+      title: s.title,
+      body: s.body,
+    })),
+  };
 }
-
-export type { IrReportData, IrReportSection } from './mocks/irReportData';

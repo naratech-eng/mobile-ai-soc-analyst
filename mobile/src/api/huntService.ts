@@ -1,15 +1,15 @@
-// Mocked — see BUILD-BRIEF.md's repo-boundary note: POST /hunt doesn't
-// exist on the backend. This file IS the mock, full stop (RB-6: no
-// runtime live/mock flag). When the real endpoint ships, this body
-// changes to call request('/hunt', ...) — screens don't change.
+// POST /hunt (TH-01): the analyst supplies the query — this just executes
+// it against the backend's persisted signal history. See BUILD-BRIEF.md's
+// repo-boundary note; this replaced the mock now that the endpoint exists.
 
-import { HUNT_RESULT, type HuntResult } from './mocks/huntData';
+import { request } from './client';
+import type { HuntResult } from './types';
 
-const MOCK_DELAY_MS = 300;
-
-export async function runHuntQuery(): Promise<HuntResult> {
-  await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
-  return HUNT_RESULT;
+export async function runHuntQuery(query: string): Promise<HuntResult> {
+  return request<HuntResult>('/hunt', {
+    method: 'POST',
+    body: JSON.stringify({ query }),
+  });
 }
 
-export type { HuntMatch, HuntResult } from './mocks/huntData';
+export type { HuntMatch, HuntResult } from './types';
