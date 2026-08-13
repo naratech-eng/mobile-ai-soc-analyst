@@ -20,9 +20,17 @@ from app.config import settings
 COLLECTION_NAME = "attack_mobile_techniques"
 DEFAULT_SEED = Path(__file__).parent / "seed_techniques.json"
 
+_client: chromadb.ClientAPI | None = None
+
 
 def get_client() -> chromadb.ClientAPI:
-    return chromadb.PersistentClient(path=settings.chroma_persist_dir)
+    # Reuse one PersistentClient process-wide: multiple instances pointing at
+    # the same path is a documented ChromaDB footgun and a suspected cause of
+    # the stalls seen on the container.
+    global _client
+    if _client is None:
+        _client = chromadb.PersistentClient(path=settings.chroma_persist_dir)
+    return _client
 
 
 def ingest(source: Path = DEFAULT_SEED) -> int:

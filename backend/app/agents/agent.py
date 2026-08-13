@@ -44,7 +44,5 @@ attack_correlation.register(triage_agent)
 
 async def run_triage(deps: AgentDeps, signal: Signal) -> TriageResult:
     prompt = format_signal_for_triage(signal)
-    print("TRACE agent: calling triage_agent.run", flush=True)
     result = await triage_agent.run(prompt, deps=deps)
-    print("TRACE agent: triage_agent.run returned", flush=True)
     return result.output

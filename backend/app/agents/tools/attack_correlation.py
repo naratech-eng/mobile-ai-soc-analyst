@@ -14,9 +14,7 @@ def register(agent) -> None:
         """Retrieve the closest-matching ATT&CK Mobile technique docs for a
         given signal description. Always call this before deciding on a
         verdict — cite the attack_id it returns, never invent one."""
-        print("TRACE tool: retrieve_attack_context called", flush=True)
         matches = retrieve_technique_context(query)
-        print("TRACE tool: retrieve_technique_context returned", flush=True)
         if not matches:
             return "No matching ATT&CK technique found in the knowledge base."
 
