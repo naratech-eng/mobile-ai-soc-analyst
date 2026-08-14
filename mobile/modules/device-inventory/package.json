@@ -1,0 +1,11 @@
+{
+  "name": "device-inventory",
+  "version": "1.0.0",
+  "description": "Local Expo module (Android): enumerates installed packages and their requested/granted permissions for MC-01/MC-02.",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {},
+  "dependencies": {
+    "expo-modules-core": "*"
+  }
+}

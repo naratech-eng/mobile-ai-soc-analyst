@@ -23,12 +23,14 @@ def _now() -> datetime:
 
 
 class SignalType(str, Enum):
-    """Collector types, per MC-01..MC-04 in docs/product/moscow.md."""
+    """Collector types, per MC-01..MC-04 in docs/product/moscow.md, plus
+    DECOY_ACCESS for honeypot/decoy touch events (FR-007)."""
 
     PERMISSION = "permission"
     INSTALLED_APP = "installed_app"
     SCHEDULED_JOB = "scheduled_job"
     NETWORK_ACTIVITY = "network_activity"
+    DECOY_ACCESS = "decoy_access"
 
 
 class Verdict(str, Enum):
@@ -88,3 +90,63 @@ class SignalIn(SQLModel):
 
 class SignalBatchRequest(SQLModel):
     signals: list[SignalIn]
+
+
+# --- Deception / honeypot (FR-007) ---
+
+
+class DecoyEventIn(SQLModel):
+    """Report of an access to a planted decoy artifact. Submitted by the
+    honeypot instrumentation (honeypot/instrument_access.py) the moment a
+    read/exfil attempt on the decoy is observed."""
+
+    device_id: str
+    platform: str = "android"
+    decoy_id: str = Field(description="Identifier of the planted decoy, e.g. its file path or a stable alias")
+    accessor: Optional[str] = Field(default=None, description="Process/actor that touched the decoy, if known")
+    observed_at: Optional[datetime] = None
+
+
+# --- Hunt (FR-005 / TH-01) ---
+
+
+class HuntRequest(SQLModel):
+    query: str
+
+
+class HuntMatch(SQLModel):
+    signal_id: str
+    device_id: str
+    type: SignalType
+    matched_reason: str
+    observed_at: datetime
+
+
+class HuntResult(SQLModel):
+    query: str
+    matches: list[HuntMatch]
+
+
+# --- IR report (FR-004) ---
+
+
+class IrReportRequest(SQLModel):
+    alert_id: Optional[str] = None  # defaults to the most recent alert
+
+
+class IrReportSection(SQLModel):
+    id: str  # "preparation" | "detection" | "containment" | "post_event"
+    title: str
+    body: str
+
+
+class IrReportResult(SQLModel):
+    incident_id: str
+    generated_at: datetime
+    summary: str
+    sections: list[IrReportSection]
+    # Alert context so a client can label *which* incident this report is
+    # for without a second lookup — see docs on the mobile IR Report screen.
+    attack_id: Optional[str] = None
+    severity: str
+    raised_at: datetime

@@ -79,3 +79,48 @@ def raise_alert(
 def list_alerts(session: Session, limit: int = 100) -> list[Alert]:
     statement = select(Alert).order_by(Alert.raised_at.desc()).limit(limit)
     return list(session.exec(statement))
+
+
+def search_signals(session: Session, query: str, limit: int = 50) -> list[Signal]:
+    """Keyword hunt over historical signals (TH-01): case-insensitive match
+    against the signal type or any stringified payload value. Deterministic
+    substring search rather than an LLM call — the analyst's hypothesis
+    drives the query, this just executes it reliably."""
+    needle = query.strip().lower()
+    if not needle:
+        return []
+
+    statement = select(Signal).order_by(Signal.observed_at.desc()).limit(500)
+    matches: list[Signal] = []
+    for signal in session.exec(statement):
+        haystack = signal.type.value.lower() + " " + " ".join(
+            str(v).lower() for v in signal.payload.values()
+        )
+        if needle in haystack:
+            matches.append(signal)
+        if len(matches) >= limit:
+            break
+    return matches
+
+
+def get_alert_context(
+    session: Session, alert_id: Optional[str] = None
+) -> Optional[tuple[Alert, Event, Signal, Optional[Technique]]]:
+    """Full context for an IR report: the alert, the event/verdict that
+    raised it, the source signal, and the correlated technique if any.
+    Defaults to the most recent alert when alert_id is omitted."""
+    if alert_id:
+        alert = session.get(Alert, alert_id)
+    else:
+        alert = session.exec(select(Alert).order_by(Alert.raised_at.desc())).first()
+    if alert is None:
+        return None
+
+    event = session.get(Event, alert.event_id)
+    if event is None:
+        return None
+    signal = session.get(Signal, event.signal_id)
+    if signal is None:
+        return None
+    technique = session.get(Technique, alert.attack_id) if alert.attack_id else None
+    return alert, event, signal, technique

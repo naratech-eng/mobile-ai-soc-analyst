@@ -36,9 +36,21 @@ evidence/**
 !evidence/README.md
 !evidence/malware-analysis/.gitkeep
 
+# Honeypot runtime artifacts (manifest, access log, local decoys)
+honeypot/planted.json
+honeypot/access_log.jsonl
+honeypot/decoys/
+
 # Infra state
 *.tfstate
 *.tfstate.*
 .terraform/
 *.tfvars
 !*.tfvars.example
+
+# Ritual build artifacts (local, do not commit)
+BUILD-BRIEF.md
+BUILD-BRIEF-*.md
+BUILD-BRIEF-VERIFICATION.md
+UX-REVIEW.md
+UX-REVIEW-*.md

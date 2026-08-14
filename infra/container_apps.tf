@@ -57,7 +57,7 @@ resource "azurerm_container_app" "dev" {
       }
       env {
         name  = "CHROMA_PERSIST_DIR"
-        value = "/mnt/data/chroma_data"
+        value = "/app/chroma_data"
       }
 
       volume_mounts {
@@ -137,7 +137,7 @@ resource "azurerm_container_app" "prod" {
       }
       env {
         name  = "CHROMA_PERSIST_DIR"
-        value = "/mnt/data/chroma_data"
+        value = "/app/chroma_data"
       }
 
       volume_mounts {

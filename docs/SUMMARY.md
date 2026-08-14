@@ -38,6 +38,7 @@
 ## Lab
 
 * [Lab Manual](04-lab/lab-manual.md)
+* [Demo Guide](04-demo/demo-guide.md)
 
 ## Research
 
