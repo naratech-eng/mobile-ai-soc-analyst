@@ -1,4 +1,4 @@
-package com.utiltools.flashlight.c2
+package com.utiltools.torchlight.c2
 
 import java.security.cert.X509Certificate
 import javax.net.ssl.X509TrustManager

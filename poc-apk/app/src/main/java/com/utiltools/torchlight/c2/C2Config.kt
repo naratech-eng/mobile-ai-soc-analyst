@@ -1,4 +1,4 @@
-package com.utiltools.flashlight.c2
+package com.utiltools.torchlight.c2
 
 /**
  * PoC-only. Points at poc-c2-server, my own test infrastructure running

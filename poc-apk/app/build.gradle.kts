@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    namespace = "com.utiltools.flashlight"
+    namespace = "com.utiltools.torchlight"
     compileSdk = 34
 
     defaultConfig {
         // Benign-looking utility app identity — delivery/T1474.003 framing.
         // PoC only: self-built, isolated lab, never a personal device.
-        applicationId = "com.utiltools.flashlight"
+        applicationId = "com.utiltools.torchlight"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

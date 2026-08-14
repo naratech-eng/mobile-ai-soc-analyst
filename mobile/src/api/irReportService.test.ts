@@ -15,6 +15,9 @@ const API_RESPONSE = {
     { id: 'containment', title: 'Containment, Eradication & Recovery', body: 'force-stop applied.' },
     { id: 'post_event', title: 'Post-Event Activity', body: 'Evidence retained.' },
   ],
+  attack_id: 'T1603',
+  severity: 'medium',
+  raised_at: '2026-08-13T19:58:00Z',
 };
 
 describe('getIrReport', () => {
@@ -31,6 +34,9 @@ describe('getIrReport', () => {
     );
     expect(report.incidentId).toBe('alert-1');
     expect(report.generatedAt).toBe('2026-08-13T20:00:00Z');
+    expect(report.attackId).toBe('T1603');
+    expect(report.severity).toBe('medium');
+    expect(report.raisedAt).toBe('2026-08-13T19:58:00Z');
     expect(report.sections.map((s) => s.id)).toEqual([
       'preparation',
       'detection',

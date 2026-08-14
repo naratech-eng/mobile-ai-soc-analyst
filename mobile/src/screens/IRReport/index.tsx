@@ -5,6 +5,8 @@ import { Text, View } from '@/components/Themed';
 import { ApiHttpError, describeApiError } from '@/src/api/errors';
 import { getIrReport } from '@/src/api/irReportService';
 import type { IrReportData } from '@/src/api/irReportService';
+import { formatRelativeTime } from '@/src/lib/formatRelativeTime';
+import { formatAttackId } from '@/src/screens/Dashboard/format';
 
 export default function IRReportScreen() {
   const [report, setReport] = useState<IrReportData | null>(null);
@@ -41,6 +43,10 @@ export default function IRReportScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>IR Report</Text>
+      <Text style={styles.alertContext}>
+        {formatAttackId(report.attackId)} · {report.severity} severity · raised{' '}
+        {formatRelativeTime(report.raisedAt)}
+      </Text>
       <Text style={styles.incidentId}>{report.incidentId}</Text>
       <Text style={styles.summary}>{report.summary}</Text>
 
@@ -78,10 +84,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
+  alertContext: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 8,
+  },
   incidentId: {
     fontSize: 12,
     opacity: 0.6,
-    marginTop: 4,
+    marginTop: 2,
   },
   summary: {
     fontSize: 14,

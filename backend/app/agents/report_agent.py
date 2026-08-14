@@ -81,6 +81,9 @@ async def run_report_generation(
         incident_id=alert.alert_id,
         generated_at=datetime.now(timezone.utc),
         summary=narrative.summary,
+        attack_id=alert.attack_id,
+        severity=alert.severity,
+        raised_at=alert.raised_at,
         sections=[
             IrReportSection(id="preparation", title="Preparation", body=narrative.preparation),
             IrReportSection(

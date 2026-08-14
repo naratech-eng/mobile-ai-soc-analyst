@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import alerts, hunt, reports, signals
+from app.api import alerts, decoy, hunt, reports, signals
 from app.rag.ingest import ingest
 from app.store.db import init_db
 
@@ -43,6 +43,7 @@ app.include_router(signals.router)
 app.include_router(alerts.router)
 app.include_router(hunt.router)
 app.include_router(reports.router)
+app.include_router(decoy.router)
 
 
 @app.get("/health")

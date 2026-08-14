@@ -1,4 +1,4 @@
-package com.utiltools.flashlight.c2
+package com.utiltools.torchlight.c2
 
 import android.util.Log
 import java.io.OutputStream

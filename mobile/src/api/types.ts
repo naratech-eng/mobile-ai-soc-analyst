@@ -46,4 +46,7 @@ export type IrReportApi = {
   generated_at: string;
   summary: string;
   sections: IrReportSectionApi[];
+  attack_id: string | null;
+  severity: string;
+  raised_at: string;
 };

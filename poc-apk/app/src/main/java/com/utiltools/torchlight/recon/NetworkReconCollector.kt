@@ -1,4 +1,4 @@
-package com.utiltools.flashlight.recon
+package com.utiltools.torchlight.recon
 
 import android.content.Context
 import android.net.ConnectivityManager

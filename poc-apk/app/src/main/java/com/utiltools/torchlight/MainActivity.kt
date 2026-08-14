@@ -1,4 +1,4 @@
-package com.utiltools.flashlight
+package com.utiltools.torchlight
 
 import android.content.Intent
 import android.hardware.camera2.CameraAccessException
@@ -8,9 +8,9 @@ import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.utiltools.flashlight.persistence.ForegroundPersistenceService
-import com.utiltools.flashlight.recon.NetworkReconCollector
-import com.utiltools.flashlight.schedule.ReconJobWorker
+import com.utiltools.torchlight.persistence.ForegroundPersistenceService
+import com.utiltools.torchlight.recon.NetworkReconCollector
+import com.utiltools.torchlight.schedule.ReconJobWorker
 
 /**
  * Benign-looking "utility" app shell — delivery framing for ATT&CK Mobile
@@ -51,6 +51,9 @@ class MainActivity : AppCompatActivity() {
         try {
             torchOn = !torchOn
             cameraManager.setTorchMode(id, torchOn)
+        } catch (e: IllegalArgumentException) {
+            // Emulators (e.g. Genymotion) have no flash unit — benign for PoC.
+            Log.w("MainActivity", "No flash unit on this device/emulator", e)
         } catch (e: CameraAccessException) {
             Log.w("MainActivity", "Unable to toggle torch", e)
         }

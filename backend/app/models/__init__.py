@@ -1,5 +1,6 @@
 from .schemas import (
     Alert,
+    DecoyEventIn,
     Device,
     Event,
     HuntMatch,
@@ -18,6 +19,7 @@ from .schemas import (
 
 __all__ = [
     "Alert",
+    "DecoyEventIn",
     "Device",
     "Event",
     "HuntMatch",

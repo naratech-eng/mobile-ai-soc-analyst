@@ -83,3 +83,8 @@ def test_ir_report_generates_four_sections(client, auth_headers):
     assert report["summary"] == stub_narrative.summary
     section_ids = [s["id"] for s in report["sections"]]
     assert section_ids == ["preparation", "detection", "containment", "post_event"]
+    # Alert context the mobile IR Report screen needs to label which
+    # incident the report is for (RB: distinct from a bare incident_id).
+    assert report["attack_id"] == "T1603"
+    assert report["severity"]
+    assert report["raised_at"]

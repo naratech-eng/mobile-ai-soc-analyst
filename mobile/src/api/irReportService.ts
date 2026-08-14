@@ -17,6 +17,9 @@ export type IrReportData = {
   generatedAt: string;
   summary: string;
   sections: IrReportSection[];
+  attackId: string | null;
+  severity: string;
+  raisedAt: string;
 };
 
 export async function getIrReport(alertId?: string): Promise<IrReportData> {
@@ -34,5 +37,8 @@ export async function getIrReport(alertId?: string): Promise<IrReportData> {
       title: s.title,
       body: s.body,
     })),
+    attackId: api.attack_id,
+    severity: api.severity,
+    raisedAt: api.raised_at,
   };
 }
