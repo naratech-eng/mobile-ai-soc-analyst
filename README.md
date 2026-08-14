@@ -13,6 +13,26 @@ feeds the analyst's decisions, not the other way around. See
 [docs/](docs/) (GitBook-published) for the full product/engineering/
 security docs and the research report.
 
+## Project 2 context (CYT230)
+
+This repository is the technical artifact behind an individual CYT230
+Project 2 submission (offense + defense implementation + research). The
+graded deliverables that accompany this code:
+
+| Deliverable | Where |
+|---|---|
+| Research report (academic structure, 33 references) | [docs/05-research/report.md](docs/05-research/report.md) |
+| Reference list | [docs/05-research/references.md](docs/05-research/references.md) |
+| Lab manual (reproducible steps + screenshots) | [docs/04-lab/lab-manual.md](docs/04-lab/lab-manual.md) |
+| Demo guide | [docs/04-demo/demo-guide.md](docs/04-demo/demo-guide.md) |
+| Local run guide (both APKs, end-to-end) | [HOW_TO_RUN_LOCALLY.txt](HOW_TO_RUN_LOCALLY.txt) |
+| Video walkthrough | submitted separately |
+
+**Safety framing:** every offensive component is self-built, benign
+proof-of-concept code, run only on an isolated emulator against
+infrastructure under the author's control. No in-the-wild malware is used
+anywhere in this project.
+
 ## Architecture
 
 ```
@@ -53,18 +73,55 @@ Two agents, one framework (Pydantic AI):
 - **`triage_agent`** ([backend/app/agents/agent.py](backend/app/agents/agent.py)) — classifies a signal, must cite a real ATT&CK ID returned by its RAG tool call or leave it null (never invents one).
 - **`report_agent`** ([backend/app/agents/report_agent.py](backend/app/agents/report_agent.py)) — writes the IR report, grounded in the specific alert's data plus a description of the real containment scripts in `ir/`.
 
+### API endpoints
+
+| Endpoint | Auth | Purpose |
+|---|---|---|
+| `POST /signals` | Bearer | Ingest device signals, triage + correlate, raise alerts |
+| `GET /alerts` | Bearer | Live alert feed for the dashboard |
+| `POST /hunt` | Bearer | Deterministic keyword search over persisted signals |
+| `POST /reports/ir` | Bearer | Generate a 4-stage IR report for an alert |
+| `POST /decoy/event` | Bearer | Honeypot tripwire → deterministic high-severity alert (no LLM) |
+| `GET /health` | none | Health check |
+| `GET /demo`, `GET /demo/alerts` | none | Browser demo page + raw JSON (presentation only) |
+| `GET /docs` | none | Swagger UI API explorer |
+
 ## Repo layout
 
 | Path | What |
 |---|---|
-| `mobile/` | Expo/React Native client |
+| `mobile/` | Expo/React Native client — the **SOC Agent** app (`com.socanalyst.mobile`), APK 2 |
 | `backend/` | FastAPI + Pydantic AI detection backend |
 | `infra/` | Terraform (Azure Container Apps deployment) |
-| `poc-apk/` | Self-built benign PoC Android app implementing the kill chain (recon → supply-chain delivery → scheduled job → C2 → exfil → persistence) — see [CLAUDE.md](CLAUDE.md) for the ATT&CK technique mapping and why no real malware is used |
+| `poc-apk/` | Self-built benign PoC Android app — the **Flashlight Util** app (`com.utiltools.torchlight`), APK 1 — implementing the kill chain (recon → supply-chain delivery → scheduled job → C2 → exfil → persistence). See [CLAUDE.md](CLAUDE.md) for the ATT&CK technique mapping and why no real malware is used |
 | `poc-c2-server/` | Test C2 server the PoC APK talks to (TLS socket, lab-only) |
-| `ir/` | Containment/eradication/recovery scripts (`adb`/`iptables`-based) used both for the live demo and referenced by the IR-report agent |
-| `honeypot/`, `containment/`, `evidence/` | Scaffolded, not yet implemented |
-| `docs/` | GitBook-published documentation (product, engineering, security, offense/defense, research report) |
+| `ir/` | Containment/eradication/recovery scripts (`adb`/`iptables`-based) used both for the live demo and referenced by the IR-report agent: `containment_kill_job.sh`, `containment_revoke_network.sh`, `recovery_restore_network.sh` |
+| `honeypot/` | **Implemented** deception path: `plant_decoy.sh` plants a decoy credential file, `instrument_access.py` watches it and posts to `POST /decoy/event`, which raises a deterministic high-severity alert (confidence 1.0, no LLM) |
+| `containment/`, `evidence/` | Scaffold/local-only working directories |
+| `docs/` | GitBook-published documentation (see the docs map below) |
+
+### The two apps
+
+Both APKs install on the same isolated emulator and are two halves of the demo:
+
+- **APK 1 — Flashlight Util** (`com.utiltools.torchlight`, `poc-apk/`): the offense. A benign-looking utility that executes the ATT&CK Mobile kill chain in the background.
+- **APK 2 — SOC Agent** (`com.socanalyst.mobile`, `mobile/`): the defense. Collects device signals, posts them to the backend, and shows the Dashboard / Hunt / IR Report tabs.
+
+For a full step-by-step of building/installing both APKs and running the end-to-end demo, see **[HOW_TO_RUN_LOCALLY.txt](HOW_TO_RUN_LOCALLY.txt)**.
+
+### Docs map (`docs/`, GitBook-published)
+
+| Folder | Contents |
+|---|---|
+| `docs/product/` | Functional/non-functional requirements |
+| `docs/engineering/` | Architecture, system design, tech stack |
+| `docs/security/` | Threat model, security model |
+| `docs/02-offense/` | Kill-chain design and ATT&CK mapping |
+| `docs/03-defense/` | Incident response, threat hunting, deception |
+| `docs/04-demo/` | Demo guide |
+| `docs/04-lab/` | Lab manual |
+| `docs/05-research/` | Research report + references + diagrams |
+| `docs/testing/`, `docs/planning/` | Test strategy, planning notes |
 
 ## Run locally
 

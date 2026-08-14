@@ -1,0 +1,233 @@
+===============================================================================
+ MOBILE AI SOC ANALYST  -  HOW TO RUN LOCALLY (with both APKs)
+ CYT230 Project 2
+===============================================================================
+
+This guide runs the whole system on a local lab: a Mac hosting the backend and
+the Metro dev server, and an isolated Android emulator (Genymotion on Windows in
+the reference setup) hosting the two apps.
+
+LAB-ONLY. Everything here is self-built, benign proof-of-concept code. Run it
+only on an isolated emulator or a wiped burner device, never on a personal or
+production phone. No in-the-wild malware is used anywhere.
+
+
+-------------------------------------------------------------------------------
+ 0. THE TWO APKs (what you are installing)
+-------------------------------------------------------------------------------
+
+  APK 1  "Flashlight Util"  (offense / PoC malware)
+         package: com.utiltools.torchlight
+         source:  poc-apk/
+         role:    executes the ATT&CK Mobile kill chain (T1422, T1474.003,
+                  T1603, T1521, T1646, T1541)
+
+  APK 2  "SOC Agent"  (defense / detection app)
+         package: com.socanalyst.mobile
+         source:  mobile/   (Expo / React Native)
+         role:    collects device signals, posts them to the backend, and
+                  shows the Dashboard / Hunt / IR Report tabs
+
+Both apps live on the SAME emulator at the same time.
+
+
+-------------------------------------------------------------------------------
+ 1. TOPOLOGY / WHO RUNS WHERE
+-------------------------------------------------------------------------------
+
+  Mac (this machine)
+    - FastAPI backend            -> http://<MAC-LAN-IP>:8000
+    - Metro / Expo dev server    -> http://<MAC-LAN-IP>:8081
+    - (optional) PoC C2 server   -> TLS socket for the C2 / exfil steps
+
+  Emulator (isolated network)
+    - Flashlight Util  (APK 1)
+    - SOC Agent        (APK 2)  -> talks to the backend over the LAN
+
+Find the Mac LAN IP with:   ipconfig getifaddr en0   (or en1)
+In the reference recording this was 192.168.4.133. Substitute your own value
+everywhere you see <MAC-LAN-IP>. If your Wi-Fi IP changes, update mobile/.env
+(Section 4) and reinstall or reload the SOC Agent app.
+
+
+-------------------------------------------------------------------------------
+ 2. PREREQUISITES
+-------------------------------------------------------------------------------
+
+  - Python 3.11+ (a virtualenv already exists at backend/.venv)
+  - Node.js 18+ and npm
+  - Android SDK (adb on PATH)
+  - JDK 17 (required to build the PoC APK)
+  - An isolated Android emulator (Genymotion used in the reference setup)
+  - An OpenAI API key (for the LLM triage/report agents)
+
+
+-------------------------------------------------------------------------------
+ 3. START THE BACKEND  (Mac)
+-------------------------------------------------------------------------------
+
+  cd backend
+  cp .env.example .env         # first time only, then edit .env
+
+  Edit backend/.env and set:
+    OPENAI_API_KEY=sk-...              your real OpenAI key
+    BACKEND_API_KEY=<pick-a-secret>   any shared secret for lab auth
+    DATABASE_URL=sqlite:///./soc_analyst.db
+    CHROMA_PERSIST_DIR=./chroma_data
+
+  Run it (bind to 0.0.0.0 so the emulator on the LAN can reach it):
+    source .venv/bin/activate
+    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+  You should see:  "RAG: ingested 6 technique docs on startup"
+
+  Smoke test (no auth needed):
+    curl http://localhost:8000/health          -> {"status":"ok"}
+
+  Authenticated test (note: Bearer token, NOT X-API-Key):
+    curl -H "Authorization: Bearer <BACKEND_API_KEY>" http://localhost:8000/alerts
+
+  Browser demo page (no auth, good for the video):
+    http://localhost:8000/demo
+  Swagger API explorer:
+    http://localhost:8000/docs
+
+
+-------------------------------------------------------------------------------
+ 4. START METRO + BUILD/INSTALL APK 2  (SOC Agent, defense app)
+-------------------------------------------------------------------------------
+
+  The SOC Agent is an Expo dev-client app. You install a dev-client APK once,
+  then it connects to Metro for the JS bundle.
+
+  4a. Configure the app's backend target:
+    cd mobile
+    cp .env.example .env         # first time only
+
+  Edit mobile/.env and set BOTH values:
+    EXPO_PUBLIC_BACKEND_URL=http://<MAC-LAN-IP>:8000
+    EXPO_PUBLIC_BACKEND_API_KEY=<same value as backend BACKEND_API_KEY>
+
+  (The two keys MUST match, or the app gets 401s. Do not commit .env.)
+
+  4b. Build the dev-client APK (one time, or after native changes):
+    npx eas build --profile development --platform android
+      - or, if building locally with the Android toolchain:
+        npx eas build --profile development --platform android --local
+  The "development" profile runs :app:assembleDebug and produces an
+  installable dev-client APK (see mobile/eas.json).
+
+  4c. Install it on the emulator:
+    adb install <path-to-soc-agent-dev-client>.apk
+  The app appears as "SOC Agent" in the drawer.
+
+  4d. Start Metro (Mac), reachable over the LAN:
+    npx expo start --dev-client --host lan
+  Open "SOC Agent" on the emulator; it connects to Metro and loads the UI.
+
+
+-------------------------------------------------------------------------------
+ 5. BUILD/INSTALL APK 1  (Flashlight Util, PoC malware)
+-------------------------------------------------------------------------------
+
+  A prebuilt debug APK may already exist at:
+    poc-apk/app/build/outputs/apk/debug/app-debug.apk
+
+  To (re)build it:
+    cd poc-apk
+
+  Ensure poc-apk/local.properties points at your Android SDK, e.g.:
+    sdk.dir=/Users/<you>/Library/Android/sdk
+
+  Build the debug APK with JDK 17 (both are machine-local settings):
+    ./gradlew assembleDebug -Dorg.gradle.java.home=/path/to/jdk-17
+
+  Install it on the SAME emulator:
+    adb install app/build/outputs/apk/debug/app-debug.apk
+  The app appears as "Flashlight Util" in the drawer.
+
+  (Optional) For the C2 / exfil steps to have a live endpoint, start the
+  lab C2 server on the Mac first:
+    cd poc-c2-server
+    ./generate_cert.sh        # first time only, makes the lab TLS cert
+    python3 server.py
+
+
+-------------------------------------------------------------------------------
+ 6. HONEYPOT  (independent detection path)
+-------------------------------------------------------------------------------
+
+  Plant the decoy on the emulator (via adb):
+    cd honeypot
+    ./plant_decoy.sh
+
+  Start watching for access (separate terminal):
+    BACKEND_URL=http://localhost:8000 \
+    BACKEND_API_KEY=<same BACKEND_API_KEY> \
+    python3 instrument_access.py
+
+  Trigger it (simulates an attacker reading the decoy; nothing in the PoC app
+  touches this file on its own):
+    adb shell cat /sdcard/Documents/sys_backup_credentials.txt
+
+  The watcher posts to POST /decoy/event and the backend raises a deterministic
+  HIGH-severity alert (confidence 1.0, no LLM). Refresh /demo to see it.
+
+
+-------------------------------------------------------------------------------
+ 7. END-TO-END DEMO ORDER
+-------------------------------------------------------------------------------
+
+  1. Backend running (Section 3), /health returns ok.
+  2. (optional) PoC C2 server running (Section 5).
+  3. Both APKs installed on the emulator (Sections 4 and 5).
+  4. Metro running; open SOC Agent.
+  5. Launch "Flashlight Util" -> kill chain runs in the background.
+  6. In SOC Agent -> Dashboard tab -> "Collect & Post Signals".
+  7. Open http://localhost:8000/demo and refresh -> alerts appear
+     (medium-severity kill-chain alerts, mapped to ATT&CK technique IDs).
+  8. SOC Agent -> Hunt tab -> query e.g. "torchlight" or "poc_recon_job".
+  9. SOC Agent -> IR Report tab -> generate the IR report for an alert.
+ 10. Trigger the honeypot (Section 6) -> HIGH-severity alert appears.
+
+
+-------------------------------------------------------------------------------
+ 8. TROUBLESHOOTING
+-------------------------------------------------------------------------------
+
+  "Missing or invalid Authorization header"
+     Use  -H "Authorization: Bearer <key>"  (the API expects Bearer, not
+     an X-API-Key header).
+
+  App shows a network error / cannot reach backend
+     - Confirm <MAC-LAN-IP> is current (ipconfig getifaddr en0/en1) and that
+       mobile/.env matches it, then reload the app.
+     - Confirm the backend was started with  --host 0.0.0.0  (not 127.0.0.1),
+       so the emulator on the LAN can reach it.
+     - Emulator and Mac must be on the same network.
+
+  App shows a config error about EXPO_PUBLIC_BACKEND_API_KEY
+     mobile/.env is missing the key, or it does not match backend/.env.
+
+  PoC APK build fails
+     - Check poc-apk/local.properties has a valid sdk.dir.
+     - Build with JDK 17 (-Dorg.gradle.java.home=/path/to/jdk-17).
+
+  Port already in use
+     Backend is 8000, Metro is 8081. Stop the stale process
+     (lsof -i :8000  /  lsof -i :8081  ->  kill <pid>) and restart.
+
+
+-------------------------------------------------------------------------------
+ 9. QUICK REFERENCE
+-------------------------------------------------------------------------------
+
+  Backend       cd backend && source .venv/bin/activate &&
+                uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+  Metro         cd mobile && npx expo start --dev-client --host lan
+  PoC build     cd poc-apk && ./gradlew assembleDebug
+  Install APK   adb install <path-to-apk>
+  Backend URL   http://<MAC-LAN-IP>:8000   (demo page: /demo, docs: /docs)
+  APK 1         Flashlight Util   com.utiltools.torchlight   (poc-apk/)
+  APK 2         SOC Agent         com.socanalyst.mobile      (mobile/)
+===============================================================================
